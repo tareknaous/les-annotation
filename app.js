@@ -200,7 +200,7 @@
   $("export-btn").addEventListener("click", exportAnswers);
   $("export-btn-2").addEventListener("click", exportAnswers);
 
-  fetch("data.json").then((r) => r.json()).then((data) => {
+  fetch("data.json?v=2").then((r) => r.json()).then((data) => {
     items = data; byId = Object.fromEntries(items.map((x) => [x.id, x]));
     try { const last = localStorage.getItem(STORE_PREFIX + "last"); if (last) $("username").value = last; } catch (e) {}
   }).catch(() => { $("login-msg").textContent = "Could not load the items. Please open this page through its web address, not as a local file."; $("login-btn").disabled = true; });
