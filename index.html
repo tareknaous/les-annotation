@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User State Annotation</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script src="config.js"></script>
+</head>
+<body>
+
+<!-- Login -->
+<section id="login" class="screen">
+  <div class="card narrow">
+    <h1>User State Annotation</h1>
+    <p class="muted">You will read 100 short conversations between a user and an AI assistant.
+      For each one, judge how the <em>user</em> felt about the assistant's last response,
+      based on what the user wrote next.</p>
+    <label for="username" class="field-label">Your username</label>
+    <input id="username" type="text" autocomplete="username" placeholder="e.g. annotator1" spellcheck="false">
+    <p class="hint">Use the same username every time. Your progress is saved under it and you can stop and resume whenever you like.</p>
+    <button id="login-btn" class="primary wide">Start</button>
+    <p id="login-msg" class="hint"></p>
+  </div>
+</section>
+
+<!-- Annotation -->
+<section id="app" class="screen hidden">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="who"><span id="who-name"></span> <button id="logout-btn" class="link">switch user</button></div>
+      <div class="progress-wrap">
+        <div class="progress"><div id="progress-bar"></div></div>
+        <span id="progress-text"></span>
+      </div>
+      <div class="top-actions">
+        <span id="sync-status" class="sync"></span>
+        <button id="guide-btn" class="ghost">Guidelines</button>
+        <button id="export-btn" class="ghost">Export</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div class="item-head">
+      <h2 id="item-title"></h2>
+      <div class="nav">
+        <button id="prev-btn" class="ghost">&larr; Previous</button>
+        <button id="jump-btn" class="ghost">Next unfinished</button>
+        <button id="next-btn" class="ghost">Next &rarr;</button>
+      </div>
+    </div>
+
+    <div id="earlier" class="earlier hidden">
+      <button id="earlier-btn" class="link"></button>
+      <div id="earlier-turns" class="hidden"></div>
+    </div>
+
+    <div class="turn user-turn">
+      <div class="role">User</div>
+      <div id="last-user" class="content plain"></div>
+    </div>
+    <div class="turn assistant-turn">
+      <div class="role">Assistant <span class="role-note">&mdash; the response you are judging</span></div>
+      <div id="last-assistant" class="content md"></div>
+    </div>
+    <div class="turn reply-turn">
+      <div class="role">User's next message <span class="role-note">&mdash; what the user actually wrote back</span></div>
+      <div id="reply" class="content plain"></div>
+    </div>
+
+    <!-- Step 1 -->
+    <form id="step1" class="card questions" autocomplete="off">
+      <div class="step-label">Step 1 of 2 &middot; Put yourself in the user's shoes</div>
+
+      <fieldset>
+        <legend>1. Did the assistant follow the user's instructions?</legend>
+        <p class="q-help">From the user's perspective, judged on the assistant's response.</p>
+        <div class="choices" data-name="instruction_followed">
+          <label><input type="radio" name="instruction_followed" value="Yes"><span>Yes</span></label>
+          <label><input type="radio" name="instruction_followed" value="Partially"><span>Partially</span></label>
+          <label><input type="radio" name="instruction_followed" value="No"><span>No</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. What kind of reaction is the user's next message?</legend>
+        <div class="choices stacked" data-name="reaction_type">
+          <label><input type="radio" name="reaction_type" value="Neutral"><span><b>Neutral</b> &mdash; a follow-up question, a topic shift, or just moving on, with no explicit critique or praise</span></label>
+          <label><input type="radio" name="reaction_type" value="Critique"><span><b>Critique</b> &mdash; explicit pushback, corrections, or complaints</span></label>
+          <label><input type="radio" name="reaction_type" value="Praise"><span><b>Praise</b> &mdash; explicit gratitude, compliments, or expressed satisfaction</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>3. As the user, how would you rate the assistant's response?</legend>
+        <div class="choices scale" data-name="rating">
+          <label><input type="radio" name="rating" value="1"><span><b>1</b> Bad<small>Completely irrelevant to what the user asked</small></span></label>
+          <label><input type="radio" name="rating" value="2"><span><b>2</b> Poor<small>A few important flaws that need revision</small></span></label>
+          <label><input type="radio" name="rating" value="3"><span><b>3</b> Acceptable<small>Missed a few minor things</small></span></label>
+          <label><input type="radio" name="rating" value="4"><span><b>4</b> Good<small>Performed the task like the user asked</small></span></label>
+          <label><input type="radio" name="rating" value="5"><span><b>5</b> Perfect<small>Flawless execution</small></span></label>
+        </div>
+      </fieldset>
+
+      <div class="form-foot">
+        <span id="step1-msg" class="hint"></span>
+        <button type="submit" class="primary">Save and continue</button>
+      </div>
+    </form>
+
+    <!-- Step 1, locked -->
+    <div id="step1-done" class="card locked hidden">
+      <div class="step-label">Step 1 &middot; your answers (locked)</div>
+      <div id="step1-summary" class="summary"></div>
+    </div>
+
+    <!-- Step 2 -->
+    <form id="step2" class="card questions hidden" autocomplete="off">
+      <div class="step-label">Step 2 of 2 &middot; Check an AI's guess</div>
+      <p class="q-help">An AI system read the same conversation and wrote down what it thought was going through the user's mind:</p>
+      <blockquote id="thought"></blockquote>
+      <fieldset>
+        <legend>4. How plausible is this as a description of what the user was thinking?</legend>
+        <div class="choices scale" data-name="thought_plausibility">
+          <label><input type="radio" name="thought_plausibility" value="1"><span><b>1</b> Implausible<small>Contradicts the conversation</small></span></label>
+          <label><input type="radio" name="thought_plausibility" value="2"><span><b>2</b> Unlikely<small>Mostly unsupported</small></span></label>
+          <label><input type="radio" name="thought_plausibility" value="3"><span><b>3</b> Possible<small>Partly right, partly a stretch</small></span></label>
+          <label><input type="radio" name="thought_plausibility" value="4"><span><b>4</b> Likely<small>A reasonable reading</small></span></label>
+          <label><input type="radio" name="thought_plausibility" value="5"><span><b>5</b> Very plausible<small>Exactly how I read it</small></span></label>
+        </div>
+      </fieldset>
+      <label for="comment" class="field-label">Comment (optional)</label>
+      <textarea id="comment" rows="2" placeholder="Anything unclear or unusual about this item?"></textarea>
+      <div class="form-foot">
+        <span id="step2-msg" class="hint"></span>
+        <button type="submit" class="primary">Save and go to next</button>
+      </div>
+    </form>
+
+    <div id="all-done" class="card done hidden">
+      <h3>All 100 items are done &mdash; thank you!</h3>
+      <p id="done-text"></p>
+      <button id="export-btn-2" class="primary">Download my answers</button>
+    </div>
+  </main>
+</section>
+
+<!-- Guidelines -->
+<dialog id="guide">
+  <div class="guide-body">
+    <h2>Guidelines</h2>
+    <p>Each item shows a conversation, the assistant's latest response, and the message the user actually sent next.
+      Your job is to infer how <b>the user</b> felt about that response &mdash; not how good you think it is in the abstract.
+      The user's next message is your main evidence: a user who simply moves on was probably satisfied enough; a user who
+      repeats or rephrases the request probably was not.</p>
+    <h3>1. Instruction followed</h3>
+    <ul><li><b>Yes</b> &mdash; did what the user asked.</li><li><b>Partially</b> &mdash; did some of it, or did it with notable gaps.</li><li><b>No</b> &mdash; did not do what was asked.</li></ul>
+    <h3>2. Reaction type</h3>
+    <ul>
+      <li><b>Critique</b> &mdash; the user's next message contains explicit pushback, corrections, or complaints.</li>
+      <li><b>Praise</b> &mdash; it contains explicit gratitude, compliments, or expresses satisfaction.</li>
+      <li><b>Neutral</b> &mdash; a follow-up question, a topic shift, or just moving on without any explicit critique or praise.</li>
+    </ul>
+    <p class="muted">Reaction type is about what the message <em>says</em>. A user can be unhappy and still write a Neutral message.</p>
+    <h3>3. Rating (from the user's point of view)</h3>
+    <ol>
+      <li><b>Bad</b> &mdash; produced a completely irrelevant response to what the user asked</li>
+      <li><b>Poor</b> &mdash; the response contains a few important flaws that need revision</li>
+      <li><b>Acceptable</b> &mdash; missed a few minor things</li>
+      <li><b>Good</b> &mdash; performed the task like the user asked</li>
+      <li><b>Perfect</b> &mdash; flawless execution</li>
+    </ol>
+    <h3>4. AI's guess (step 2)</h3>
+    <p>After you save step 1, you will see what an AI system guessed the user was thinking, and rate how plausible it is.
+      Your step 1 answers are locked at that point, so please answer step 1 on your own first.</p>
+    <p class="muted">Conversations come from real, public chatbot logs and can be messy, terse, or off-topic. Judge them as they are.</p>
+    <div class="form-foot"><button id="guide-close" class="primary">Got it</button></div>
+  </div>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
