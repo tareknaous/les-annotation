@@ -8,12 +8,8 @@ the assistant's last response, label:
 2. **Reaction type** of the user's next message: Neutral / Critique / Praise
 3. **Rating**: 1–5, from the user's point of view
 
-After saving those (they are then locked), annotators see Gemini's `Internal_thought`
-for the same turn and rate how plausible it is (1–5).
-
-The Gemini labels themselves are **not** in this repository; they stay with the
-analysis code. `data.json` holds only the conversations, the user's real next
-message, and the `Internal_thought` shown in step 2.
+Gemini's labels are **not** in this repository; they stay with the analysis code.
+`data.json` holds only the conversations and the user's real next message.
 
 ## Files
 
@@ -70,5 +66,4 @@ python scripts/les_annotation_analyze.py annotations.csv
 ```
 
 It reports Gemini–human agreement next to human–human agreement (the ceiling), for all
-items and separately for Neutral and explicit-reaction turns, plus Krippendorff's alpha
-and the Internal_thought plausibility scores.
+items and separately for Neutral and explicit-reaction turns, plus Krippendorff's alpha.

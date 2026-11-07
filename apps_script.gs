@@ -11,7 +11,7 @@
 
 const SHEET = "annotations";
 const COLS = ["user", "item_id", "instruction_followed", "reaction_type", "rating",
-              "thought_plausibility", "comment", "step1_at", "step2_at", "step1_seconds", "updated_at"];
+              "step1_at", "step1_seconds", "updated_at"];
 
 function sheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();

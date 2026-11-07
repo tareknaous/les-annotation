@@ -73,7 +73,7 @@
 
     <!-- Step 1 -->
     <form id="step1" class="card questions" autocomplete="off">
-      <div class="step-label">Step 1 of 2 &middot; Put yourself in the user's shoes</div>
+      <div class="step-label">Put yourself in the user's shoes</div>
 
       <fieldset>
         <legend>1. Did the assistant follow the user's instructions?</legend>
@@ -107,35 +107,6 @@
 
       <div class="form-foot">
         <span id="step1-msg" class="hint"></span>
-        <button type="submit" class="primary">Save and continue</button>
-      </div>
-    </form>
-
-    <!-- Step 1, locked -->
-    <div id="step1-done" class="card locked hidden">
-      <div class="step-label">Step 1 &middot; your answers (locked)</div>
-      <div id="step1-summary" class="summary"></div>
-    </div>
-
-    <!-- Step 2 -->
-    <form id="step2" class="card questions hidden" autocomplete="off">
-      <div class="step-label">Step 2 of 2 &middot; Check an AI's guess</div>
-      <p class="q-help">An AI system read the same conversation and wrote down what it thought was going through the user's mind:</p>
-      <blockquote id="thought"></blockquote>
-      <fieldset>
-        <legend>4. How plausible is this as a description of what the user was thinking?</legend>
-        <div class="choices scale" data-name="thought_plausibility">
-          <label><input type="radio" name="thought_plausibility" value="1"><span><b>1</b> Implausible<small>Contradicts the conversation</small></span></label>
-          <label><input type="radio" name="thought_plausibility" value="2"><span><b>2</b> Unlikely<small>Mostly unsupported</small></span></label>
-          <label><input type="radio" name="thought_plausibility" value="3"><span><b>3</b> Possible<small>Partly right, partly a stretch</small></span></label>
-          <label><input type="radio" name="thought_plausibility" value="4"><span><b>4</b> Likely<small>A reasonable reading</small></span></label>
-          <label><input type="radio" name="thought_plausibility" value="5"><span><b>5</b> Very plausible<small>Exactly how I read it</small></span></label>
-        </div>
-      </fieldset>
-      <label for="comment" class="field-label">Comment (optional)</label>
-      <textarea id="comment" rows="2" placeholder="Anything unclear or unusual about this item?"></textarea>
-      <div class="form-foot">
-        <span id="step2-msg" class="hint"></span>
         <button type="submit" class="primary">Save and go to next</button>
       </div>
     </form>
@@ -173,9 +144,6 @@
       <li><b>Good</b> &mdash; performed the task like the user asked</li>
       <li><b>Perfect</b> &mdash; flawless execution</li>
     </ol>
-    <h3>4. AI's guess (step 2)</h3>
-    <p>After you save step 1, you will see what an AI system guessed the user was thinking, and rate how plausible it is.
-      Your step 1 answers are locked at that point, so please answer step 1 on your own first.</p>
     <p class="muted">Conversations come from real, public chatbot logs and can be messy, terse, or off-topic. Judge them as they are.</p>
     <div class="form-foot"><button id="guide-close" class="primary">Got it</button></div>
   </div>

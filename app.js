@@ -46,10 +46,7 @@
             instruction_followed: row.instruction_followed || undefined,
             reaction_type: row.reaction_type || undefined,
             rating: row.rating ? Number(row.rating) : undefined,
-            thought_plausibility: row.thought_plausibility ? Number(row.thought_plausibility) : undefined,
-            comment: row.comment || "",
             step1_at: row.step1_at || undefined,
-            step2_at: row.step2_at || undefined,
             step1_seconds: row.step1_seconds ? Number(row.step1_seconds) : undefined,
             updated_at: row.updated_at,
           };
@@ -91,8 +88,7 @@
     return d;
   }
 
-  const isDone = (id) => !!(state.answers[id] && state.answers[id].step2_at);
-  const isStarted = (id) => !!(state.answers[id] && state.answers[id].step1_at);
+  const isDone = (id) => !!(state.answers[id] && state.answers[id].step1_at);
 
   function updateProgress() {
     const n = state.order.filter(isDone).length;
@@ -128,25 +124,9 @@
     $("last-assistant").innerHTML = md(hist[hist.length - 1].content);
     $("reply").textContent = it.reply;
 
-    const s1 = $("step1"), s2 = $("step2");
-    $("step1-msg").textContent = ""; $("step2-msg").textContent = "";
-    if (isStarted(id)) {
-      s1.classList.add("hidden");
-      $("step1-done").classList.remove("hidden");
-      $("step1-summary").innerHTML =
-        `<div><span>Instruction followed</span>${ans.instruction_followed}</div>` +
-        `<div><span>Reaction type</span>${ans.reaction_type}</div>` +
-        `<div><span>Rating</span>${ans.rating}</div>`;
-      s2.classList.remove("hidden");
-      $("thought").textContent = it.internal_thought;
-      setRadios(s2, "thought_plausibility", ans.thought_plausibility);
-      $("comment").value = ans.comment || "";
-    } else {
-      s1.classList.remove("hidden");
-      $("step1-done").classList.add("hidden");
-      s2.classList.add("hidden");
-      for (const n of ["instruction_followed", "reaction_type", "rating"]) setRadios(s1, n, ans[n]);
-    }
+    const s1 = $("step1");
+    $("step1-msg").textContent = "";
+    for (const n of ["instruction_followed", "reaction_type", "rating"]) setRadios(s1, n, ans[n]);
     const allDone = updateProgress() === state.order.length;
     $("all-done").classList.toggle("hidden", !allDone);
     if (allDone) $("done-text").textContent = SYNC_URL
@@ -195,16 +175,6 @@
     const id = state.order[state.pos];
     state.answers[id] = { ...(state.answers[id] || {}), ...v, rating: Number(v.rating),
       step1_at: stamp(), step1_seconds: Math.round((Date.now() - shownAt) / 1000), updated_at: stamp() };
-    saveLocal(); pushRemote(id); render();
-  });
-
-  $("step2").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const p = getRadio(e.target, "thought_plausibility");
-    if (!p) { $("step2-msg").textContent = "Please rate the AI's guess."; return; }
-    const id = state.order[state.pos];
-    state.answers[id] = { ...state.answers[id], thought_plausibility: Number(p), comment: $("comment").value.trim(),
-      step2_at: stamp(), updated_at: stamp() };
     saveLocal(); pushRemote(id); nextUnfinished();
   });
 
